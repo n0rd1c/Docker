@@ -1,0 +1,29 @@
+# Organizr - Unified Frontend
+  organizr:
+    container_name: organizr
+    image: organizrtools/organizr-v2:latest
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    security_opt:
+      - no-new-privileges:true
+#    ports:
+#      - "$ORGANIZR_PORT:8020"
+    volumes:
+      - $USERDIR/docker/organizr:/config
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - TZ=$TZ
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.organizr-rtr.entrypoints=https"
+      - "traefik.http.routers.organizr-rtr.rule=Host(`organizr.$DOMAINNAME`)"
+      - "traefik.http.routers.organizr-rtr.tls=true"
+      ## Middlewares
+#      - "traefik.http.routers.organizr-rtr.middlewares=chain-oauth@file"
+      - "traefik.http.routers.organizr-rtr.middlewares=chain-basic-auth@file" # Basic Authentication
+      ## HTTP Services
+      - "traefik.http.routers.organizr-rtr.service=organizr-svc"
+      - "traefik.http.services.organizr-svc.loadbalancer.server.port=80"
