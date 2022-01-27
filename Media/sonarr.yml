@@ -1,0 +1,40 @@
+# Sonarr - Television Show Management
+# Set url_base in sonarr settings if using PathPrefix
+#  sonarr:
+#    image: linuxserver/sonarr:latest
+#    container_name: sonarr
+#    restart: unless-stopped
+#    networks:
+#      - t2_proxy
+#    security_opt:
+#      - no-new-privileges:true
+#    ports:
+#      - "$SONARR_PORT:8989"
+#    volumes:
+#      - $USERDIR/docker/sonarr:/config
+#      - /unraid/seeders:/downloads
+#      - /unraid/tvshows:/tvshows
+#      - "/etc/localtime:/etc/localtime:ro"
+#      - ${USERDIR}/docker/shared:/shared
+#    environment:
+#      PUID: $PUID
+#      PGID: $PGID
+#      TZ: $TZ
+#    labels:
+#      - "traefik.enable=true"
+      ## HTTP Routers Auth Bypass
+#      - "traefik.http.routers.sonarr-rtr-bypass.entrypoints=https"
+#      - "traefik.http.routers.sonarr-rtr-bypass.rule=Headers(`X-Api-Key`, `$SONARR_API_KEY`) || Query(`apikey`, `$SONARR_API_KEY`)"
+#      - "traefik.http.routers.sonarr-rtr-bypass.priority=100"
+      ## HTTP Routers Auth
+#      - "traefik.http.routers.sonarr-rtr.entrypoints=https"
+#      - "traefik.http.routers.sonarr-rtr.rule=Host(`sonarr.$DOMAINNAME`)"
+#      - "traefik.http.routers.sonarr-rtr.priority=99"
+#      - "traefik.http.routers.sonarr-rtr.tls=true"
+      ## Middlewares     
+#      - "traefik.http.routers.sonarr-rtr-bypass.middlewares=chain-basic-auth@file"
+#      - "traefik.http.routers.sonarr-rtr.middlewares=chain-no-auth@file"
+      ## HTTP Services
+#      - "traefik.http.routers.sonarr-rtr.service=sonarr-svc"
+#      - "traefik.http.routers.sonarr-rtr-bypass.service=sonarr-svc"
+#      - "traefik.http.services.sonarr-svc.loadbalancer.server.port=8989"
