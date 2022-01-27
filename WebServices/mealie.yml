@@ -1,0 +1,39 @@
+# Mealie - Meal Planning and Cookbook
+  mealie:
+    container_name: mealie
+    image: hkotel/mealie:latest
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - $DOCKERDIR/mealie/data/:/app/data
+#    ports:
+#      - 9925:80
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+      # Default Recipe Settings
+      RECIPE_PUBLIC: 'true'
+      RECIPE_SHOW_NUTRITION: 'true'
+      RECIPE_SHOW_ASSETS: 'true'
+      RECIPE_LANDSCAPE_VIEW: 'true'
+      RECIPE_DISABLE_COMMENTS: 'false'
+      RECIPE_DISABLE_AMOUNT: 'false'
+      # Gunicorn
+      WEB_CONCURRENCY: 2
+      # WORKERS_PER_CORE: 0.5
+      # MAX_WORKERS: 8
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.mealie-rtr.entrypoints=https"
+      - "traefik.http.routers.mealie-rtr.rule=Host(`mealie.$DOMAINNAME`)"
+      - "traefik.http.routers.mealie-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.mealie-rtr.middlewares=chain-no-auth@file"
+      ## HTTP Services
+      - "traefik.http.routers.mealie-rtr.service=mealie-svc"
+      - "traefik.http.services.mealie-svc.loadbalancer.server.port=80"
