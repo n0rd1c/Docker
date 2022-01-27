@@ -1,0 +1,24 @@
+# Homer - Homepage for your Homelab
+  homer:
+    image: b4bz/homer
+    container_name: homer
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    security_opt:
+      - no-new-privileges:true
+    # ports:
+    #   - 8080:8080
+    volumes:
+      - $USERDIR/docker/homer/assets:/www/assets
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.homer-rtr.entrypoints=https"
+      - "traefik.http.routers.homer-rtr.rule=Host(`homer.$DOMAINNAME`)"
+      - "traefik.http.routers.homer-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.homer-rtr.middlewares=chain-basic-auth@file"
+      ## HTTP Services
+      - "traefik.http.routers.homer-rtr.service=homer-svc"
+      - "traefik.http.services.homer-svc.loadbalancer.server.port=8080"
