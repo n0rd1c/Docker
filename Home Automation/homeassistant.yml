@@ -1,0 +1,24 @@
+  homeassistant:
+    image: homeassistant/home-assistant:stable
+    container_name: home-assistant
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 8123:8123
+    volumes:
+      - $DOCKERDIR/homeassistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.hass-rtr.entrypoints=https"
+      - "traefik.http.routers.hass-rtr.rule=Host(`hass.$DOMAINNAME`)"
+      - "traefik.http.routers.hass-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.hass-rtr.middlewares=chain-no-auth@file" # No Authentication
+      ## HTTP Services
+      - "traefik.http.routers.hass-rtr.service=hass-svc"
+      - "traefik.http.services.hass-svc.loadbalancer.server.port=8123"
