@@ -1,0 +1,14 @@
+# InfluxDB - Time Series Database
+  influxdb:
+    hostname: influxdb
+    container_name: influxdb
+    image: influxdb
+    networks:
+      - t2_proxy
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 8086:8086
+    volumes:
+      - $USERDIR/docker/influxdb:/var/lib/influxdb
+    restart: unless-stopped
