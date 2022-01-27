@@ -1,0 +1,30 @@
+# Statping - Status Page & Monitoring Server
+  statup:
+    container_name: statping
+    image: statping/statping:latest
+    restart: always
+    networks:
+      - t2_proxy
+    depends_on:
+      - postgres
+    volumes:
+      - ./statup/app:/app
+    environment:
+      - VIRTUAL_HOST=localhost
+      - VIRTUAL_PORT=8080
+      - DB_CONN=postgres
+      - DB_HOST=postgres
+      - DB_USER=statup
+      - DB_PASS=*k{!EgX4`B(3tTH#
+      - DB_DATABASE=statup
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.statping-rtr.entrypoints=https"
+      - "traefik.http.routers.statping-rtr.rule=Host(`statping.$DOMAINNAME`)"
+      - "traefik.http.routers.statping-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.statping-rtr.middlewares=chain-no-auth@file" # No Authentication
+      ## HTTP Services
+      - "traefik.http.routers.statping-rtr.service=statping-svc"
+      - "traefik.http.services.statping-svc.loadbalancer.server.port=8080"
