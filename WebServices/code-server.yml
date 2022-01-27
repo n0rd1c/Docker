@@ -14,11 +14,11 @@
       - $DOCKERDIR/:/files
     environment:
       - TZ=America/New_York
-      - SUDO_PASSWORD=beCa-hePe
+      - SUDO_PASSWORD=PASSWORD_HERE_FOR_VM_SERVER #so it can run sudo commands if needed
       - PUID=$PUID
       - PGID-$PGID
-      - PROXY_DOMAIN=code.n0rd1c.net
-      - PASSWORD=gjmS173j2n!cW7IhVcb
+      - PROXY_DOMAIN=DOMAIN_NAME_HERE #if behind a proxy put full url: ex. vscodeserver.n0rd1c.net
+      - PASSWORD=PASSWORD_HERE_FOR_VSCODESERVER
     labels:
       - "traefik.enable=true"
       ## HTTP Routers
