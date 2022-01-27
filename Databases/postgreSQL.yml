@@ -1,0 +1,14 @@
+# PostgreSQL - Object-relational database
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    restart: always
+    networks:
+      - t2_proxy
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+    volumes:
+      - $DOCKERDIR/postgres/data:/var/lib/postgresql/data
