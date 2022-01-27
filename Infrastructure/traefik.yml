@@ -11,14 +11,19 @@ networks:
   default:
     driver: bridge
 
-########################### SERVICES
 services:
-# All services / apps go below this line
+
+###########################
+#                         #
+#     Infrastructure      #
+#                         #
+###########################
+
 
 # Traefik 2 - Reverse Proxy
   traefik:
     container_name: traefik
-    image: traefik:chevrotin # the chevrotin tag refers to v2.2.x
+    image: traefik:2.2.1 # the chevrotin tag refers to v2.2.x but introduced a breaking change in 2.2.2
     restart: unless-stopped
     command: # CLI arguments
       - --global.checkNewVersion=true
@@ -26,11 +31,16 @@ services:
       - --entryPoints.http.address=:80
       - --entryPoints.https.address=:443
         # Allow these IPs to set the X-Forwarded-* headers - Cloudflare IPs: https://www.cloudflare.com/ips/
-#      - --entrypoints.https.forwardedHeaders.trustedIPs=173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/12,172.64.0.0/13,131.0.72.0/22
+      - --entrypoints.https.forwardedHeaders.trustedIPs=173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/12,172.64.0.0/13,131.0.72.0/22
       - --entryPoints.traefik.address=:8080
+      - --entryPoints.smtp.address=:25
+      - --entryPoints.smtpssl.address=:465
+      - --entryPoints.smtpout.address=:587
+      - --entryPoints.pop3.address=:110
+      - --entryPoints.pop3ssl.address=:995
+      - --entryPoints.imapssl.address=:993
+      - --entryPoints.imap.address=:143
       - --api=true
-#      - --api.insecure=true
-#      - --serversTransport.insecureSkipVerify=true
       - --log=true
       - --log.level=DEBUG # (Default: error) DEBUG, INFO, WARN, ERROR, FATAL, PANIC
       - --accessLog=true
@@ -46,16 +56,13 @@ services:
       - --providers.file.directory=/rules # Load dynamic configuration from one or more .toml or .yml files in a directory.
 #      - --providers.file.filename=/path/to/file # Load dynamic configuration from a file.
       - --providers.file.watch=true # Only works on top level files in the rules folder
-#      - --certificatesResolvers.dns-namecheap.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory # LetsEncrypt Staging Server - uncomment when testing
-#      - --certificatesResolvers.dns-namecheap.acme.apiuser=$NAMECHEAP_API_USER
-      - --certificatesResolvers.dns-namecheap.acme.storage=/acme.json
-      - --certificatesResolvers.dns-namecheap.acme.dnsChallenge.provider=namecheap
-      - --certificatesResolvers.dns-namecheap.acme.dnsChallenge.resolvers=198.54.117.10:53,198.54.117.11:53
+#      - --certificatesResolvers.dns-cloudflare.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory # LetsEncrypt Staging Server - uncomment when testing
+      - --certificatesResolvers.dns-cloudflare.acme.email=$CLOUDFLARE_EMAIL
+      - --certificatesResolvers.dns-cloudflare.acme.storage=/acme.json
+      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.provider=cloudflare
+      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.resolvers=1.1.1.1:53,1.0.0.1:53
     networks:
-      t2_proxy:
-        ipv4_address: 192.168.90.254 # You can specify a static IP
-#    networks:
-#      - t2_proxy
+      - t2_proxy
     security_opt:
       - no-new-privileges:true
     ports:
@@ -72,14 +79,14 @@ services:
         protocol: tcp
         mode: host
     volumes:
-      - $USERDIR/docker/traefik2/rules:/rules
+      - $DOCKERDIR/traefik2/rules:/rules 
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - $USERDIR/docker/traefik2/acme/acme.json:/acme.json
-      - $USERDIR/docker/traefik2/traefik.log:/traefik.log
-      - $USERDIR/docker/shared:/shared
+      - $DOCKERDIR/traefik2/acme/acme.json:/acme.json 
+      - $DOCKERDIR/traefik2/traefik.log:/traefik.log 
+      - $DOCKERDIR/shared:/shared
     environment:
-      - NAMECHEAP_API_USER=$NAMECHEAP_API_USER
-      - NAMECHEAP_API_KEY=$NAMECHEAP_API_KEY
+      - CF_API_EMAIL=$CLOUDFLARE_EMAIL
+      - CF_API_KEY=$CLOUDFLARE_API_KEY
     labels:
       - "traefik.enable=true"
       # HTTP-to-HTTPS Redirect
@@ -91,11 +98,9 @@ services:
       - "traefik.http.routers.traefik-rtr.entrypoints=https"
       - "traefik.http.routers.traefik-rtr.rule=Host(`traefik.$DOMAINNAME`)"
       - "traefik.http.routers.traefik-rtr.tls=true"
-#      - "traefik.http.routers.traefik-rtr.tls.certresolver=dns-namecheap" # Comment out this line after first run of traefik to force the use of wildcard certs
+      - "traefik.http.routers.traefik-rtr.tls.certresolver=dns-cloudflare" # Comment out this line after first run of traefik to force the use of wildcard certs
       - "traefik.http.routers.traefik-rtr.tls.domains[0].main=$DOMAINNAME"
       - "traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.$DOMAINNAME"
-#      - "traefik.http.routers.traefik-rtr.tls.domains[1].main=$SECONDDOMAINNAME" # Pulls main cert for second domain
-#      - "traefik.http.routers.traefik-rtr.tls.domains[1].sans=*.$SECONDDOMAINNAME" # Pulls wildcard cert for second domain
       ## Services - API
       - "traefik.http.routers.traefik-rtr.service=api@internal"
       ## Middlewares
@@ -103,11 +108,11 @@ services:
       - "traefik.http.middlewares.traefik-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
       - "traefik.http.middlewares.traefik-headers.headers.accesscontrolalloworiginlist=https://$DOMAINNAME"
       - "traefik.http.middlewares.traefik-headers.headers.accesscontrolmaxage=100"
-      - "traefik.http.middlewares.traefik-headers.headers.addvaryheader=true"
-      - "traefik.http.middlewares.traefik-headers.headers.allowedhosts=traefik.$DOMAINNAME"
+      - "traefik.http.middlewares.traefik-headers.headers.addvaryheader=true" 
+      - "traefik.http.middlewares.traefik-headers.headers.allowedhosts=traefik.$DOMAINNAME" 
       - "traefik.http.middlewares.traefik-headers.headers.hostsproxyheaders=X-Forwarded-Host"
       - "traefik.http.middlewares.traefik-headers.headers.sslredirect=true"
-      - "traefik.http.middlewares.traefik-headers.headers.sslhost=traefik.$DOMAINNAME"
+      - "traefik.http.middlewares.traefik-headers.headers.sslhost=traefik.$DOMAINNAME" 
       - "traefik.http.middlewares.traefik-headers.headers.sslforcehost=true"
       - "traefik.http.middlewares.traefik-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
       - "traefik.http.middlewares.traefik-headers.headers.stsseconds=63072000"
