@@ -1,0 +1,27 @@
+# Kavita - Reading Server
+  kavita:
+    image: kizaing/kavita:latest
+    container_name: kavita
+    restart:  unless-stopped
+    networks:
+      - t2_proxy
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 5000:5000
+    volumes:
+      - $DOCKERDIR/kavita/config:/kavita/config
+      - $DOCKERDIR/kavita/manga:/manga
+      - /unraid/books/books:/books/books
+      - /unraid/books/comics:/books/comics 
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.kavita-rtr.entrypoints=https"
+      - "traefik.http.routers.kavita-rtr.rule=Host(`kavita.$DOMAINNAME`)"
+      - "traefik.http.routers.kavita-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.kavita-rtr.middlewares=chain-no-auth@file"
+      ## HTTP Services
+      - "traefik.http.routers.kavita-rtr.service=kavita-svc"
+      - "traefik.http.services.kavita-svc.loadbalancer.server.port=5000"
