@@ -1,0 +1,32 @@
+# Bookstack - self-hosted Wiki Platform
+  bookstack:
+    image: ghcr.io/linuxserver/bookstack
+    container_name: bookstack
+    restart:  unless-stopped
+    networks:
+      - t2_proxy
+    security_opt:
+      - no-new-privileges:true
+    # ports:
+    #  - 6875:80
+    volumes:
+      - $DOCKERDIR/bookstack/config:/config
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - APP_URL=$BOOKSTACK_URL
+      - DB_HOST=mariadb
+      - DB_USER=$BOOKSTACK_USER
+      - DB_PASS=$BOOKSTACK_PW
+      - DB_DATABASE=$BOOKSTACK_DB
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.bookstack-rtr.entrypoints=https"
+      - "traefik.http.routers.bookstack-rtr.rule=Host(`bookstack.$DOMAINNAME`)"
+      - "traefik.http.routers.bookstack-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.bookstack-rtr.middlewares=chain-no-auth@file"
+      ## HTTP Services
+      - "traefik.http.routers.bookstack-rtr.service=bookstack-svc"
+      - "traefik.http.services.bookstack-svc.loadbalancer.server.port=80"
