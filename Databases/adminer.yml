@@ -1,0 +1,17 @@
+  adminer:
+    container_name: adminer
+    image: adminer
+    restart: always
+    networks:
+      - t2_proxy
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.adminer-rtr.entrypoints=https"
+      - "traefik.http.routers.adminer-rtr.rule=Host(`adminer.$DOMAINNAME`)"
+      - "traefik.http.routers.adminer-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.adminer-rtr.middlewares=chain-basic-auth@file"
+      ## HTTP Services
+      - "traefik.http.routers.adminer-rtr.service=adminer-svc"
+      - "traefik.http.services.adminer-svc.loadbalancer.server.port=8080"
