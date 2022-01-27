@@ -1,32 +1,31 @@
 # Jackett - Torrent proxy
 # Set url_base in Jackett settings if using PathPrefix
-  jackett:
-    image: linuxserver/jackett:latest
-    container_name: jackett
-    restart: always
-    # network_mode: container:transmission-vpn
-    networks:
-      - t2_proxy
-    security_opt:
-      - no-new-privileges:true
+#  jackett:
+#    image: linuxserver/jackett:latest
+#    container_name: jackett
+#    restart: always
+#    networks:
+#      - t2_proxy
+#    security_opt:
+#      - no-new-privileges:true
 #    ports:
-#      - "$JACKETT_PORT:9117"
-    volumes:
-      - $USERDIR/docker/jackett:/config
-      - $USERDIR/Downloads:/downloads
-      - "/etc/localtime:/etc/localtime:ro"
-    environment:
-      PUID: $PUID
-      PGID: $PGID
-      TZ: $TZ
-    labels:
-      - "traefik.enable=true"
+#      - "9117:9117"
+#    volumes:
+#      - $USERDIR/docker/jackett:/config
+#      - /unraid/seeders:/downloads
+#      - "/etc/localtime:/etc/localtime:ro"
+#    environment:
+#      PUID: $PUID
+#      PGID: $PGID
+#      TZ: $TZ
+#    labels:
+#      - "traefik.enable=true"
       ## HTTP Routers
-      - "traefik.http.routers.jackett-rtr.entrypoints=https"
-      - "traefik.http.routers.jackett-rtr.rule=Host(`jackett.$DOMAINNAME`)"
-      - "traefik.http.routers.qbittorrent-rtr.tls=true"
+#      - "traefik.http.routers.jackett-rtr.entrypoints=https"
+#      - "traefik.http.routers.jackett-rtr.rule=Host(`jackett.$DOMAINNAME`)"
+#      - "traefik.http.routers.jackett-rtr.tls=true"
       ## Middlewares
-      - "traefik.http.routers.jackett-rtr.middlewares=chain-authelia@file"
+#      - "traefik.http.routers.jackett-rtr.middlewares=chain-no-auth@file"
       ## HTTP Services
-      - "traefik.http.routers.jackett-rtr.service=jackett-svc"
-      - "traefik.http.services.jackett-svc.loadbalancer.server.port=9117"
+#      - "traefik.http.routers.jackett-rtr.service=jackett-svc"
+#      - "traefik.http.services.jackett-svc.loadbalancer.server.port=9117"
