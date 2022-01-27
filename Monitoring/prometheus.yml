@@ -1,0 +1,24 @@
+#Prometheus - Monitoring system and Time Series Database    
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+#    ports:
+#      - 9090:9090
+#    command:
+#      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - $DOCKERDIR/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.prometheus-rtr.entrypoints=https"
+      - "traefik.http.routers.prometheus-rtr.rule=Host(`prom.$DOMAINNAME`)"
+      - "traefik.http.routers.prometheus-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.prometheus-rtr.middlewares=chain-no-auth@file"
+      ## HTTP Services
+      - "traefik.http.routers.prometheus-rtr.service=prometheus-svc"
+      - "traefik.http.services.prometheus-svc.loadbalancer.server.port=9090"
