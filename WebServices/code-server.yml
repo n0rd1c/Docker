@@ -1,0 +1,32 @@
+# Code Server - VS Code Server in the browser
+  code-server:
+    image: linuxserver/code-server:latest
+    container_name: code-server
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    security_opt:
+      - no-new-privileges
+  # ports:
+   #  - 8443:8443
+    volumes:
+      - $DOCKERDIR/code-server/config:/config
+      - $DOCKERDIR/:/files
+    environment:
+      - TZ=America/New_York
+      - SUDO_PASSWORD=beCa-hePe
+      - PUID=$PUID
+      - PGID-$PGID
+      - PROXY_DOMAIN=code.n0rd1c.net
+      - PASSWORD=gjmS173j2n!cW7IhVcb
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.codeserver-rtr.entrypoints=https"
+      - "traefik.http.routers.codeserver-rtr.rule=Host(`code.$DOMAINNAME`)"
+      - "traefik.http.routers.codeserver-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.codeserver-rtr.middlewares=chain-basic-auth@file"
+      ## HTTP Services
+      - "traefik.http.routers.codeserver-rtr.service=codeserver-svc"
+      - "traefik.http.services.codeserver-svc.loadbalancer.server.port=8443"
