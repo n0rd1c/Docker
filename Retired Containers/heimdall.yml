@@ -1,0 +1,29 @@
+# Heimdall - Application Dashboard
+  heimdall:
+    container_name: heimdall
+    image: linuxserver/heimdall
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    security_opt:
+      - no-new-privileges:true
+#    ports:
+#      - 80:80
+#      - 443:443
+    volumes:
+      - $USERDIR/docker/heimdall:/config
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - TZ=$TZ
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.heimdall-rtr.entrypoints=https"
+      - "traefik.http.routers.heimdall-rtr.rule=Host(`heimdall.$DOMAINNAME`)"
+      - "traefik.http.routers.heimdall-rtr.tls=true"
+      ## HTTP Middlewares
+      - "traefik.http.routers.heimdall-rtr.middlewares=chain-basic-auth@file"
+      ## HTTP Services
+      - "traefik.http.routers.heimdall-rtr.service=heimdall-svc"
+      - "traefik.http.services.heimdall-svc.loadbalancer.server.port=80"
