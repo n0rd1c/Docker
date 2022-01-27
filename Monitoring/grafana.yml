@@ -1,0 +1,32 @@
+# Grafana - Graphic Monitoring
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    security_opt:
+      - no-new-privileges:true
+#    ports:
+#      - 3000:3000
+    volumes:
+      - $USERDIR/docker/grafana:/var/lib/grafana
+      - $USERDIR/docker/grafana/config:/config
+    user: "472"
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
+    depends_on:
+      - influxdb
+      - varken
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.grafana-rtr.entrypoints=https"
+      - "traefik.http.routers.grafana-rtr.rule=Host(`grafana.$DOMAINNAME`)"
+      - "traefik.http.routers.grafana-rtr.tls=true"
+      ## Middlewares
+#      - "traefik.http.routers.grafana-rtr.middlewares=chain-oauth@file"
+      - "traefik.http.routers.grafana-rtr.middlewares=chain-no-auth@file" # No Authentication
+      ## HTTP Services
+      - "traefik.http.routers.grafana-rtr.service=grafana-svc"
+      - "traefik.http.services.grafana-svc.loadbalancer.server.port=3000"
