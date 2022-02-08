@@ -1,0 +1,17 @@
+# FlareSolverr - Proxy to defeat Cloudflare Blocks
+  flaresolverr:
+    container_name: flaresolverr
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    restart: unless-stopped
+    networks: 
+      - t2_proxy
+    security_opt:
+      - no-new-privileges:true
+    ports: 
+      - "8191:8191"
+    environment:
+      - LOG_LEVEL=info
+      - LOG_HTML=false
+      - CAPTCHA_SOLVER=harvester
+      - HARVESTER_ENDPOINT=https://127.0.0.1:5000/token
+      - TZ=America/New_York
