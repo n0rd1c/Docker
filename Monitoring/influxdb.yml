@@ -13,3 +13,5 @@
       - 8089:8089/udp
     volumes:
       - $USERDIR/docker/influxdb:/var/lib/influxdb
+    environment:
+      - INFLUXDB_ADMIN_ENABLED=true
