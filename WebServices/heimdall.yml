@@ -1,0 +1,26 @@
+# Heimdall - Dashboard for Homelab
+  heimdall:
+    image: lscr.io/linuxserver/heimdall:latest
+    container_name: heimdall
+	restart: unless-stopped
+	networks:
+	  - t2_proxy
+	security_opt:
+	  - no-new-privileges:true
+    volumes:
+      - $DOCKERDIR/heimdall/config:/config
+	environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - TZ=$TZ
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.bookstack-rtr.entrypoints=https"
+      - "traefik.http.routers.bookstack-rtr.rule=Host(`heimdall.$DOMAINNAME`)"
+      - "traefik.http.routers.bookstack-rtr.tls=true"
+      ## Middlewares
+      - "traefik.http.routers.bookstack-rtr.middlewares=chain-basic-auth@file"
+      ## HTTP Services
+      - "traefik.http.routers.bookstack-rtr.service=bookstack-svc"
+      - "traefik.http.services.bookstack-svc.loadbalancer.server.port=80"
