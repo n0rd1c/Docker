@@ -2,14 +2,14 @@
   heimdall:
     image: lscr.io/linuxserver/heimdall:latest
     container_name: heimdall
-	restart: unless-stopped
-	networks:
-	  - t2_proxy
-	security_opt:
-	  - no-new-privileges:true
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    security_opt:
+      - no-new-privileges:true
     volumes:
       - $DOCKERDIR/heimdall/config:/config
-	environment:
+    environment:
       - PUID=$PUID
       - PGID=$PGID
       - TZ=$TZ
